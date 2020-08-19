@@ -1,14 +1,3 @@
-setwd("E:\\GCT\\Functions")
-source("library.R")
-source("integr.model.fit.R")
-source("gbm.predict.R")
-source("SearchChilds.R")
-source("ulist.R")
-source("dgp.R")
-source("Treebuild.R")
-source("Treebuild.honest.R")
-source("eval.tree.R")
-source("eval.honest.tree.R")
 
 sim.reps <- 1000
 set.seed(999)
