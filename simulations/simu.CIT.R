@@ -1,4 +1,4 @@
-setwd("E:/DownloadCode/CIT-master")  #### setwd("..")
+setwd("..")
 folder <- paste(getwd(), "/Functions/", sep="")
 functions <- list.files(folder)
 functions <- paste(folder, functions, sep = "")
