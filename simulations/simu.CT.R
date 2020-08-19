@@ -1,4 +1,4 @@
-setwd("E:/DownloadCode/CIT-master")  #### setwd("..")
+setwd("..")
 folder <- paste(getwd(), "/Functions/", sep="")
 functions <- list.files(folder)
 functions <- paste(folder, functions, sep = "")
@@ -540,7 +540,7 @@ opt.CT.homo.honest   <- colMeans(opt.ct.homo.res.honest, na.rm = TRUE)
 
 stopImplicitCluster()
 
-save.image(file = "E:/ÂÛÎÄ/groupTest/MethodCompare/simulation/simu.CT.RData")
+save.image(file = "E:/Ã‚Ã›ÃŽÃ„/groupTest/MethodCompare/simulation/simu.CT.RData")
 
 save(CT.hetero.res.nonhonest, CT.homo.res.nonhonest, 
      opt.CT.hetero.res.nonhonest, opt.CT.homo.res.nonhonest, 
