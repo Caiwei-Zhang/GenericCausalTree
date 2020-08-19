@@ -1,5 +1,5 @@
-# GeneralizedCausalTree
-Generalized Causal Tree: Inference on Subgroup-Level Treatment Effects in Observational Studies
+# GenericCausalTree
+Generic Causal Tree: Inference on Subgroup-Level Treatment Effects in Observational Studies
 
 ## Brief Intro
 An implement for tree-based algorithm to do heterogeneous treatment effects estimation and inference with observational data. 
@@ -8,7 +8,7 @@ An implement for tree-based algorithm to do heterogeneous treatment effects esti
 All the required packages will be installed and loaded by the file `./functions/library.R`.
 
 ## Usage
-Build dependent environment for constructing Generalized Casual Tree:
+Build dependent environment for constructing Generic Casual Tree:
 ```
 setwd("../functions")
 fileName <- list.files(getwd())
@@ -43,4 +43,4 @@ fancyRpartPlot(opt_honest_gct, type = 4, palettes = "Greens",
 
 
 ## Data Analysis 
-A data analysis example is offerd in `./Data analysis/`. We build a generalized causal tree to find the heterogeneity of racial disparities between American Whites and American Africans. The data we use is from Treatment Episode Data Set: Admissions 2015 (TEDS-A-2015), a program that collects the information of admissions to substance abuse treatment occurring in 2015. TEDS-A-2015 is available on the website of [Substance Abuse & Mental Health Data Archive (SAMHDA)](https://www.datafiles.samhsa.gov/).
+A data analysis example is offerd in `./Data analysis/`. We build a generic causal tree to find the heterogeneity of racial disparities between American Whites and American Africans. The data we use is from Treatment Episode Data Set: Admissions 2015 (TEDS-A-2015), a program that collects the information of admissions to substance abuse treatment occurring in 2015. TEDS-A-2015 is available on the website of [Substance Abuse & Mental Health Data Archive (SAMHDA)](https://www.datafiles.samhsa.gov/).
