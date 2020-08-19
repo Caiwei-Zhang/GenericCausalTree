@@ -43,4 +43,4 @@ fancyRpartPlot(opt_honest_gct, type = 4, palettes = "Greens",
 
 
 ## Data Analysis 
-A data analysis example is offerd in `./Data analysis/`. We build a generic causal tree to find the heterogeneity of racial disparities between American Whites and American Africans. The data we use is from Treatment Episode Data Set: Admissions 2015 (TEDS-A-2015), a program that collects the information of admissions to substance abuse treatment occurring in 2015. TEDS-A-2015 is available on the website of [Substance Abuse & Mental Health Data Archive (SAMHDA)](https://www.datafiles.samhsa.gov/).
+A data analysis example is offered in `./Data analysis/`. We build a generic causal tree to find the heterogeneity of racial disparities between American Whites and American Africans. The data we use is from Treatment Episode Data Set: Admissions 2015 (TEDS-A-2015), a program that collects the information of admissions to substance abuse treatment occurring in 2015. TEDS-A-2015 is available on the website of [Substance Abuse & Mental Health Data Archive (SAMHDA)](https://www.datafiles.samhsa.gov/).
