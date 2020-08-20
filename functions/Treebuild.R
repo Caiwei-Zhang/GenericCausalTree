@@ -482,18 +482,3 @@ Treebuild <- function(data, form.outcome, form.pscore, weights,  # subset, x, y,
 }
 
 
-
-
-# calculate the variance in the root
-v.hat  <- data.valid$A - data.valid$pscore
-Y.star <- data.valid$Y - data.valid$cond.outcome
-
-trt.eff.root <- sum(v.hat * Y.star) / sum(v.hat ^ 2)
-
-var.root <- nrow(data.valid) * sum(v.hat^2 * (Y.star-v.hat*trt.eff.root)^2) / (sum(v.hat^2))^2
-
-tree.to.valid$frame$variance[1] <- var.root
-
-# variance should be estimate with seperate data 
-tree.to.valid$frame$variance[h+1] <- var.left
-tree.to.valid$frame$variance[r.child.row] <- var.right
