@@ -18,8 +18,11 @@ for (file in fileList) {
 }
 ```
 
-Use `Treebuild()` to construct the regular version of GCT, and use `honest.Treebuild()` to construct the honest version Tree. If you need to infer the treatment effects, please use function `honest.Treebuild()` to get the results with confidence interval, which is provided in the frame of the optimal tree from the results.
-The following script shows how to use function `Treebuild()` and `honest.Treebuild()` for heterogeneous treatment effect estimation.
+Use `Treebuild()` to construct the regular version of GCT, and use `honest.Treebuild()` to construct the honest version Tree. 
+
+If you want to make inference on the treatment effects, please use function `honest.Treebuild()`, which provides confidence interval in the *frame* of the *optree*.
+An example of how to use function `Treebuild()` and `honest.Treebuild()` is given below:
+
 ```
 gct <- Treebuild(data = data, form.outcome = "Y ~ .", form.pscore = "A ~ .", 
                  type.outcome = "continuous", train.frac = 0.8, 
@@ -27,6 +30,7 @@ gct <- Treebuild(data = data, form.outcome = "Y ~ .", form.pscore = "A ~ .",
                  cp = qchisq(0.95, 1), minsplit = 60, minsize = 30)
 
 opt_gct <- gct$optree
+ste_nonhonest <- opt_gct$frame$yval[which(opt_gct$frame[,1] == "leaf")]
 fancyRpartPlot(opt_gct, type = 4, palettes = "Greens",
                sub = "optimal tree")
  
@@ -37,6 +41,9 @@ honest_gct <- honest.Treebuild(data = data, form.outcome = "Y ~ .", form.pscore 
                                minsplit = 60, minsize = 30)
                                 
 opt_honest_gct <- honest_gct$optree
+ste_honest <- opt_honest_gct$frame$yval[which(opt__honest_gct$frame[,1] == "leaf")]
+CI <- cbind(opt_honest_gct$frame$ci.lower[which(opt__honest_gct$frame[,1] == "leaf")],
+            opt_honest_gct$frame$ci.upper[which(opt__honest_gct$frame[,1] == "leaf")]) 
 fancyRpartPlot(opt_honest_gct, type = 4, palettes = "Greens", 
                sub = "honest optimal tree")
 ```
