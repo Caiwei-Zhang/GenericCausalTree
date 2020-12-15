@@ -1,9 +1,9 @@
 if (!require(forcats)) {install.packages("forcats"); library(forcats)}
 if (!require(tidyverse)) {install.packages("tidyverse"); library(tidyverse)}
+if (!require(ggplot2)) {install.packages("ggplot2"); library(ggplot2)}
 
-load("E:\\GenericCausalTree\\Data_analysis\\TEDSA_2015_PUF.Rda") 
-# load("C:/Users/ZCW/AppData/Local/Temp/Temp1_TEDS-A-2015-DS0001-bndl-data-r.zip/TEDSA_2015_PUF.Rda")
-# View(tedsa_2015)
+setwd("..")
+load("TEDSA_2015_PUF.Rda") 
 Maryland <- tedsa_2015 %>% dplyr::filter(STFIPS %in% c(24))
 # colnames(Maryland)
 Maryland_select <- Maryland %>% 
