@@ -1,4 +1,6 @@
-setwd("./CIT-master/Functions/")  #### setwd("..")
+setwd("..")
+load("./seed.RData")
+setwd("./Simulations/Study1_MethodComparison/CIT-master/Functions/")  
 functions <- list.files(getwd())
 functions <- grep("main.R", functions, invert = T, value = T)
 functions <- paste(getwd(), functions, sep = "/")
@@ -6,11 +8,16 @@ for (i in functions){
   source(i)
 }
 
+source("./Functions/dgp.R")
 
 ################################################################################################
 ########################### 1. CIT-DR: heterogenuous, modelfitBefore ###########################
 ################################################################################################
-CIT.DR.hetero.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+CIT.DR.hetero.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F, adj.mthd = "GBM", seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- hetero.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   data.lst$where.split <- list(c(1))   
@@ -38,10 +45,10 @@ CIT.DR.hetero.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
                                   propsc.mthd       = "GLM",
                                   propsc.form.true  = NULL,
                                   adj.mod.loc       = "out", 
-                                  adj.mthd          = "GBM", 
+                                  adj.mthd          = adj.mthd, 
                                   adj.form.true     = NULL, 
-                                  num.truc.obs      = 30,
-                                  min.node          = 10)
+                                  num.truc.obs      = nn/100, #30,
+                                  min.node          = nn/200) #10)
   
   final.CIT.dr <- EstDr.CvMethod1(data.used         = data.train,
                                   tree.list         = prune.CIT.dr$tree.list, 
@@ -52,7 +59,7 @@ CIT.DR.hetero.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
                                   propsc.mthd       = "GLM",
                                   propsc.form.true  = NULL,
                                   adj.mod.loc       = "out",
-                                  adj.mthd          = "GBM",
+                                  adj.mthd          = adj.mthd,
                                   adj.form.true     = NULL)
   t1 <- Sys.time() 
   
@@ -77,7 +84,11 @@ CIT.DR.hetero.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
 ########################### 2. CIT-DR: homogeneous, modelfitBefore ############################
 ################################################################################################
 
-CIT.DR.homo.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+CIT.DR.homo.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F, adj.mthd = "GBM", seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- homo.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   data.lst$where.split <- list(c(1))   
@@ -105,7 +116,7 @@ CIT.DR.homo.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
                                   propsc.mthd       = "GLM",
                                   propsc.form.true  = NULL,
                                   adj.mod.loc       = "out", 
-                                  adj.mthd          = "GBM", 
+                                  adj.mthd          = adj.mthd, 
                                   adj.form.true     = NULL, 
                                   num.truc.obs      = 100,
                                   min.node          = 50)
@@ -119,7 +130,7 @@ CIT.DR.homo.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
                                   propsc.mthd       = "GLM",
                                   propsc.form.true  = NULL,
                                   adj.mod.loc       = "out",
-                                  adj.mthd          = "GBM",
+                                  adj.mthd          = adj.mthd,
                                   adj.form.true     = NULL)
   t1 <- Sys.time() 
   
@@ -143,8 +154,11 @@ CIT.DR.homo.fitBefore.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
 ################################################################################################
 ########################### 3. CIT-DR: heterogenuous, modelfitinparent #########################
 ################################################################################################
-
-CIT.DR.hetero.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+CIT.DR.hetero.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F, adj.mthd = "GBM", seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- hetero.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   data.lst$where.split <- list(c(1))   
@@ -173,10 +187,10 @@ CIT.DR.hetero.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
                                   propsc.mthd       = "GLM",
                                   propsc.form.true  = NULL,
                                   adj.mod.loc       = "node", 
-                                  adj.mthd          = "GBM", 
+                                  adj.mthd          = adj.mthd, 
                                   adj.form.true     = NULL, 
-                                  num.truc.obs      = 60,
-                                  min.node          = 30)
+                                  num.truc.obs      = nn/50, # 60, nn/50
+                                  min.node          = nn/100) # 30, nn/100
   
   final.CIT.dr <- EstDr.CvMethod1(data.used         = data.train,
                                   tree.list         = prune.CIT.dr$tree.list, 
@@ -187,7 +201,7 @@ CIT.DR.hetero.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
                                   propsc.mthd       = "GLM",
                                   propsc.form.true  = NULL,
                                   adj.mod.loc       = "node",
-                                  adj.mthd          = "GBM",
+                                  adj.mthd          = adj.mthd,
                                   adj.form.true     = NULL)
   t1 <- Sys.time() 
   
@@ -210,7 +224,11 @@ CIT.DR.hetero.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
 ########################## 4. CIT-DR: homogeneous, modelfitinparent ############################
 ################################################################################################
 
-CIT.DR.homo.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+CIT.DR.homo.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F, adj.mthd = "GBM", seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- homo.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   data.lst$where.split <- list(c(1))   
@@ -239,7 +257,7 @@ CIT.DR.homo.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
                                   propsc.mthd       = "GLM",
                                   propsc.form.true  = NULL,
                                   adj.mod.loc       = "node", 
-                                  adj.mthd          = "GBM", 
+                                  adj.mthd          = adj.mthd, 
                                   adj.form.true     = NULL, 
                                   num.truc.obs      = 100,
                                   min.node          = 50)
@@ -253,7 +271,7 @@ CIT.DR.homo.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
                                   propsc.mthd       = "GLM",
                                   propsc.form.true  = NULL,
                                   adj.mod.loc       = "node",
-                                  adj.mthd          = "GBM",
+                                  adj.mthd          = adj.mthd,
                                   adj.form.true     = NULL)
   t1 <- Sys.time() 
   
@@ -272,38 +290,65 @@ CIT.DR.homo.fitinparent.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
   
 }
 
-sim.reps <- 1000
-set.seed(999)
+
 
 # foreach
+sim.reps <- 1000
 clnum <- detectCores()
 cl <- makeCluster(getOption("cl.cores", clnum - 4))
-registerDoParallel()
-pack <- c("caret", "devtools", "gbm", "dplyr", "rpart", "MASS", "randomForestSRC", "plm")
+registerDoParallel(cl)
+pack <- c("caret", "devtools", "gbm", "dplyr", "rpart", "MASS", "randomForestSRC", "plm", "xgboost")
 
-CIT.DR.hetero.res.fitBefore   <- foreach(1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.hetero.fitBefore.simu.func(nn = 1000)
-CIT.DR.homo.res.fitBefore     <- foreach(1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.homo.fitBefore.simu.func(nn = 1000)
-CIT.DR.hetero.res.fitinparent <- foreach(1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.hetero.fitinparent.simu.func(nn = 1000)
-CIT.DR.homo.res.fitinparent   <- foreach(1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.homo.fitinparent.simu.func(nn = 1000)
+CIT.DR.hetero.res.fitBefore   <- foreach(i = 1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.hetero.fitBefore.simu.func(nn = 1000, seed = seed[i])
+CIT.DR.homo.res.fitBefore     <- foreach(i = 1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.homo.fitBefore.simu.func(nn = 1000, seed = seed[i+sim.reps])
+CIT.DR.hetero.res.fitinparent <- foreach(i = 1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.hetero.fitinparent.simu.func(nn = 1000, seed = seed[i])
+CIT.DR.homo.res.fitinparent   <- foreach(i = 1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.homo.fitinparent.simu.func(nn = 1000, seed = seed[i+sim.reps])
 
 CIT.DR.hetero.fitBefore.1000   <- colMeans(CIT.DR.hetero.res.fitBefore, na.rm = TRUE)
 CIT.DR.homo.fitBefore.1000     <- colMeans(CIT.DR.homo.res.fitBefore, na.rm = TRUE)
 CIT.DR.hetero.fitinparent.1000   <- colMeans(CIT.DR.hetero.res.fitinparent, na.rm = TRUE)
 CIT.DR.homo.fitinparent.1000     <- colMeans(CIT.DR.homo.res.fitinparent, na.rm = TRUE)
 
-# CIT.DR.hetero.fitBefore.1000.rf   <- colMeans(CIT.DR.hetero.res.fitBefore, na.rm = TRUE)
-# CIT.DR.homo.fitBefore.1000.rf     <- colMeans(CIT.DR.homo.res.fitBefore, na.rm = TRUE)
-# CIT.DR.hetero.fitBefore.1000.glm   <- colMeans(CIT.DR.hetero.res.fitBefore, na.rm = TRUE)
-# CIT.DR.homo.fitBefore.1000.glm     <- colMeans(CIT.DR.homo.res.fitBefore, na.rm = TRUE)
+save(CIT.DR.hetero.res.fitBefore,   
+     CIT.DR.homo.res.fitBefore,     
+     CIT.DR.hetero.res.fitinparent, 
+     CIT.DR.homo.res.fitinparent,   
+     CIT.DR.hetero.fitBefore.1000,  
+     CIT.DR.homo.fitBefore.1000,    
+     CIT.DR.hetero.fitinparent.1000,
+     CIT.DR.homo.fitinparent.1000, 
+     file = "./Simulations/Study1_MethodComparison/res/CIT.nonhonest.1000.RData")
+
+# RF & GLM
+CIT.DR.hetero.res.fitBefore.rf   <- foreach(i = 1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.hetero.fitBefore.simu.func(nn = 1000, adj.mthd = "RF", seed = seed[i])
+CIT.DR.homo.res.fitBefore.rf     <- foreach(i = 1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.homo.fitBefore.simu.func(nn = 1000, adj.mthd = "RF", seed = seed[i+sim.reps])
+CIT.DR.hetero.res.fitBefore.glm  <- foreach(i = 1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.hetero.fitBefore.simu.func(nn = 1000, adj.mthd = "GLM", seed = seed[i])
+CIT.DR.homo.res.fitBefore.glm    <- foreach(i = 1:sim.reps, .combine = rbind, .export = ls(), .packages = pack) %dopar% CIT.DR.homo.fitBefore.simu.func(nn = 1000, adj.mthd = "GLM", seed = seed[i+sim.reps])
+
+
+CIT.DR.hetero.fitBefore.1000.rf   <- colMeans(CIT.DR.hetero.res.fitBefore.rf, na.rm = TRUE)
+CIT.DR.homo.fitBefore.1000.rf     <- colMeans(CIT.DR.homo.res.fitBefore.rf, na.rm = TRUE)
+CIT.DR.hetero.fitBefore.1000.glm   <- colMeans(CIT.DR.hetero.res.fitBefore.glm, na.rm = TRUE)
+CIT.DR.homo.fitBefore.1000.glm     <- colMeans(CIT.DR.homo.res.fitBefore.glm, na.rm = TRUE)
+
+
+save(CIT.DR.hetero.fitBefore.1000,  
+     CIT.DR.homo.fitBefore.1000,  
+     CIT.DR.hetero.fitBefore.1000.rf, 
+     CIT.DR.homo.fitBefore.1000.rf,   
+     CIT.DR.hetero.fitBefore.1000.glm,
+     CIT.DR.homo.fitBefore.1000.glm, 
+     CIT.DR.hetero.res.fitBefore,
+     CIT.DR.homo.res.fitBefore,
+     CIT.DR.hetero.res.fitBefore.rf, 
+     CIT.DR.homo.res.fitBefore.rf,    
+     CIT.DR.hetero.res.fitBefore.glm, 
+     CIT.DR.homo.res.fitBefore.glm,
+     file = "./Simulations/Appendix_ML/res/CIT.nonhonest.1000.ML.RData")
 
 stopImplicitCluster()
 
 
-
-# apply
-# CIT.DR.hetero.res.fitBefore   <- apply(sapply(1:sim.reps, function(iter) CIT.DR.hetero.fitBefore.simu.func(nn = 1000)), 1, as.numeric)
-# CIT.DR.homo.res.fitBefore     <- apply(sapply(1:sim.reps, function(iter) CIT.DR.homo.fitBefore.simu.func(nn = 1000)), 1, as.numeric)
-# CIT.DR.hetero.res.fitinparent <- apply(sapply(1:sim.reps, function(iter) CIT.DR.hetero.fitinparent.simu.func(nn = 1000)), 1, as.numeric)
-# CIT.DR.homo.res.fitinparent   <- apply(sapply(1:sim.reps, function(iter) CIT.DR.homo.fitinparent.simu.func(nn = 1000)), 1, as.numeric)
-
+gc()
+memory.size()
 
