@@ -1,26 +1,23 @@
-setwd(".\\Functions")
-functions <- list.files(getwd())
-functions <- paste(paste(getwd(), "\\", sep = ""), functions, sep = "")
-for (f in functions) {
-  source(i)
+setwd("..")
+load("./seed.RData")
+setwd("./Functions")
+file <- list.files(getwd())
+filePath <- paste(paste(getwd(), "/", sep = ""), file, sep = "")
+filePath <- grep("all", filePath, invert = TRUE, value = TRUE)
+for (f in filePath) {
+  print(f)
+  source(f)
 }
-# source("library.R")
-# source("integr.model.fit.R")
-# source("gbm.predict.R")
-# source("SearchChilds.R")
-# source("ulist.R")
-# source("dgp.R")
-# source("Treebuild.R")
-# source("Treebuild.honest.R")
-# source("eval.tree.R")
-# source("eval.honest.tree.R")
 
-sim.reps <- 1000
-set.seed(999)
+
 ##############################################################################################
-################## 1. heterogenuous: honest, modelfitBefore, est.fitBefore  ##################
+################# 1-1. heterogenuous: honest, modelfitBefore, est.fitBefore  ###################
 ##############################################################################################
-hetero.fitBefore.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+hetero.fitBefore.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F, seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- hetero.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   if (unmeas.conf == F) {
@@ -35,7 +32,7 @@ hetero.fitBefore.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
   tree.lst <- honest.Treebuild(data = data, form.outcome = "Y ~ .", form.pscore = "A ~ .", type.outcome = "continuous", 
                                train.frac = 0.8, modelFitBefore = TRUE, est.modelFitBefore = TRUE,
                                outcome.mthd = "GBM", pscore.mthd = "GLM", cp = qchisq(0.95, 1), 
-                               minsplit = 30, minsize = 10)
+                               minsplit = 30, minsize = 10)#30 10
   
   opt.tree <- tree.lst$optree 
   t1 <- Sys.time()
@@ -59,9 +56,13 @@ hetero.fitBefore.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
 
 
 ##############################################################################################
-################### 2. homogeneous: honest, modelfitBefore, est.fitBefore ####################
+################### 1-2. homogeneous: honest, modelfitBefore, est.fitBefore ####################
 ##############################################################################################
-homo.fitBefore.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+homo.fitBefore.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F, seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- homo.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   if (unmeas.conf == F) {
@@ -100,9 +101,13 @@ homo.fitBefore.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
 
 
 ##############################################################################################
-################### 3. heterogenuous: honest, modelfitinparent, est.fitBefore ################
+################### 1-3. heterogenuous: honest, modelfitinparent, est.fitBefore ################
 ##############################################################################################
-hetero.fitinparent.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+hetero.fitinparent.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F, seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- hetero.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   if (unmeas.conf == F) {
@@ -117,7 +122,7 @@ hetero.fitinparent.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
   tree.lst <- honest.Treebuild(data = data, form.outcome = "Y ~ .", form.pscore = "A ~ .", type.outcome = "continuous", 
                                train.frac = 0.8, modelFitBefore = FALSE, est.modelFitBefore = TRUE,
                                outcome.mthd = "GBM", pscore.mthd = "GLM", cp = qchisq(0.95, 1), 
-                               minsplit = 60, minsize = 30)
+                               minsplit = 60, minsize = 30)#60 30
   
   opt.tree <- tree.lst$optree 
   t1 <- Sys.time()
@@ -140,9 +145,13 @@ hetero.fitinparent.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
 
 
 ##############################################################################################
-##################### 4. homogenuous: honest, modelfitinparent, est.fitBefore ################
+##################### 1-4. homogenuous: honest, modelfitinparent, est.fitBefore ################
 ##############################################################################################
-homo.fitinparent.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+homo.fitinparent.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F, seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- homo.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   if (unmeas.conf == F) {
@@ -178,63 +187,62 @@ homo.fitinparent.honest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
   tmp
 }
 
- # organize the results
-Output <- function(origin.res, hetero = TRUE){
-  num.corr.tree <- sum(origin.res[,"corr.tree"])
-  if(hetero){
-    output <- origin.res %>% as.data.frame() %>%
-      summarize(corr.tree.prop = mean(corr.tree, na.rm = TRUE),
-                num.leaf = mean(num.leaf, na.rm = TRUE),
-                num.noise = mean(num.noise.splt, na.rm = TRUE),
-                fir.splt.acc = mean(fir.splt.ind, na.rm = TRUE),
-                pps = mean(pps, na.rm = TRUE),
-                abs.split.err = mean(abs.err.sp, na.rm = TRUE),
-                mse = mean(mse, na.rm = TRUE), 
-                cvr_1 = sum(cvr1)/num.corr.tree,
-                cvr_2 = sum(cvr2)/num.corr.tree,
-                cvr_sim = sum(sim_cvr)/num.corr.tree,
-                widthCI = mean(widthCI, na.rm = TRUE),
-                time = mean(time, na.rm = TRUE))
-  } else {
-    output <- origin.res %>% as.data.frame() %>%
-      summarize(corr.tree.prop = mean(corr.tree, na.rm = TRUE),
-                num.leaf = mean(num.leaf, na.rm = TRUE),
-                num.noise = mean(num.noise.splt, na.rm = TRUE),
-                fir.splt.acc = mean(fir.splt.ind, na.rm = TRUE),
-                pps = mean(pps, na.rm = TRUE),
-                abs.split.err = mean(abs.err.sp, na.rm = TRUE),
-                mse = mean(mse, na.rm = TRUE), 
-                cvr = sum(cvr)/num.corr.tree,
-                widthCI = mean(widthCI, na.rm = TRUE),
-                time = mean(time, na.rm = TRUE))
-  }
-  return(output)
-}
 
 # foreach
 clnum <- detectCores()
-cl <- makeCluster(getOption("cl.cores", clnum - 1))
+cl <- makeCluster(getOption("cl.cores", clnum - 4))
 registerDoParallel(cl)
-pack <- c("caret", "devtools",  "dplyr", "plm", "gbm", "MASS", "rpart", "randomForestSRC")
+pack <- c("caret", "devtools", "causalTree", "causalForest", "dplyr", "grf",
+          "gbm", "MASS", "rpart", "randomForestSRC", "rattle", "rpart.plot")
 
-GCT.hetero.res.fitBefore.honest   <- foreach(1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% hetero.fitBefore.honest.simu.func(nn = 2000)
-GCT.homo.res.fitinparent.honest   <- foreach(1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% homo.fitinparent.honest.simu.func(nn = 2000)
-GCT.hetero.res.fitBefore.honest   <- foreach(1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% hetero.fitBefore.honest.simu.func(nn = 2000)
-GCT.homo.res.fitinparent.honest   <- foreach(1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% homo.fitinparent.honest.simu.func(nn = 2000)
+GCT.hetero.res.fitBefore.honest   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  hetero.fitBefore.honest.simu.func(nn = 2000, seed = seed[i])
+GCT.hetero.res.fitinparent.honest <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  hetero.fitinparent.honest.simu.func(nn = 2000, seed = seed[i])
+GCT.homo.res.fitBefore.honest     <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  homo.fitBefore.honest.simu.func(nn = 2000, seed = seed[i + sim.reps])
+GCT.homo.res.fitinparent.honest   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  homo.fitinparent.honest.simu.func(nn = 2000, seed = seed[i + sim.reps])
 
 GCT.hetero.fitBefore.honest.2000   <- Output(GCT.hetero.res.fitBefore.honest)
 GCT.hetero.fitinparent.honest.2000 <- Output(GCT.hetero.res.fitinparent.honest)
 GCT.homo.fitBefore.honest.2000     <- Output(GCT.homo.res.fitBefore.honest, hetero = FALSE)
 GCT.homo.fitinparent.honest.2000   <- Output(GCT.homo.res.fitinparent.honest, hetero = FALSE)
 
+save(GCT.hetero.res.fitBefore.honest, GCT.hetero.fitBefore.honest.2000, 
+     GCT.hetero.res.fitinparent.honest, GCT.hetero.fitinparent.honest.2000, 
+     GCT.homo.res.fitBefore.honest, GCT.homo.fitBefore.honest.2000,
+     GCT.homo.res.fitinparent.honest, GCT.homo.fitinparent.honest.2000,
+     file = "./Simulations/Study2_honestGCT/res/GCT.honest.2000.RData")
+
 stopImplicitCluster()
+memory.size()
+gc()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ####################### Comparion with non-honest version GCT ################################
 
 ##############################################################################################
 ############# 2-1. heterogenuous: non honest, modelfitBefore, est.fitBefore  #################
 ##############################################################################################
-hetero.fitBefore.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+hetero.fitBefore.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F, outcome.mthd = "GBM", seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- hetero.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   if (unmeas.conf == F) {
@@ -247,8 +255,8 @@ hetero.fitBefore.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
   
   t0 <- Sys.time()
   tree.lst <- Treebuild.GCTwithVar(data = data, form.outcome = "Y ~ .", form.pscore = "A ~ .", type.outcome = "continuous", 
-                                   train.frac = 0.8, modelFitBefore = TRUE, outcome.mthd = "GLM", pscore.mthd = "GLM", 
-                                   cp = qchisq(0.95, 1), minsplit = 30, minsize = 10)
+                                   train.frac = 0.8, modelFitBefore = TRUE, outcome.mthd = outcome.mthd, pscore.mthd = "GLM", 
+                                   cp = qchisq(0.95, 1), minsplit = 30, minsize = 10) #minsplit = nn/100, minsize = nn/200
   
   opt.tree <- tree.lst$optree 
   t1 <- Sys.time()
@@ -272,7 +280,11 @@ hetero.fitBefore.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
 ##############################################################################################
 ################ 2-2. homogeneous: nonhonest, modelfitBefore, est.fitBefore ##################
 ##############################################################################################
-homo.fitBefore.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+homo.fitBefore.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F, outcome.mthd = "GBM", seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- homo.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   if (unmeas.conf == F) {
@@ -285,7 +297,7 @@ homo.fitBefore.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
   
   t0 <- Sys.time()
   tree.lst <- Treebuild.GCTwithVar(data = data, form.outcome = "Y ~ .", form.pscore = "A ~ .", type.outcome = "continuous", 
-                                   train.frac = 0.8, modelFitBefore = TRUE,  outcome.mthd = "GLM", pscore.mthd = "GLM", 
+                                   train.frac = 0.8, modelFitBefore = TRUE,  outcome.mthd = outcome.mthd, pscore.mthd = "GLM", 
                                    cp = qchisq(0.95, 1), minsplit = 100, minsize = 50)
   
   opt.tree <- tree.lst$optree 
@@ -311,7 +323,11 @@ homo.fitBefore.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
 ##############################################################################################
 ################ 2-3. heterogenuous: nonhonest, modelfitinparent, est.fitBefore ##############
 ##############################################################################################
-hetero.fitinparent.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+hetero.fitinparent.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F, outcome.mthd = "GBM", seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- hetero.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   if (unmeas.conf == F) {
@@ -324,7 +340,7 @@ hetero.fitinparent.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F)
   
   t0 <- Sys.time()
   tree.lst <- Treebuild.GCTwithVar(data = data, form.outcome = "Y ~ .", form.pscore = "A ~ .", type.outcome = "continuous", 
-                                   train.frac = 0.8, modelFitBefore = FALSE, outcome.mthd = "GBM", pscore.mthd = "GLM", 
+                                   train.frac = 0.8, modelFitBefore = FALSE, outcome.mthd = outcome.mthd, pscore.mthd = "GLM", 
                                    cp = qchisq(0.95, 1), minsplit = 60, minsize = 30)
   
   opt.tree <- tree.lst$optree 
@@ -350,7 +366,11 @@ hetero.fitinparent.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F)
 ##############################################################################################
 ################## 2-4. homogenuous: nonhonest, modelfitinparent, est.fitBefore ##############
 ##############################################################################################
-homo.fitinparent.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
+homo.fitinparent.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F, outcome.mthd = "GBM", seed = NULL) {
+  
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
   
   data.lst <- homo.DataGen(N = nn, p = dim, dgp = "cov", N.test = 1000)
   if (unmeas.conf == F) {
@@ -363,7 +383,7 @@ homo.fitinparent.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
   
   t0 <- Sys.time()
   tree.lst <- Treebuild.GCTwithVar(data = data, form.outcome = "Y ~ .", form.pscore = "A ~ .", type.outcome = "continuous", 
-                                   train.frac = 0.8, modelFitBefore = FALSE, outcome.mthd = "GBM", pscore.mthd = "GLM", 
+                                   train.frac = 0.8, modelFitBefore = FALSE, outcome.mthd = outcome.mthd, pscore.mthd = "GLM", 
                                    cp = qchisq(0.95, 1), minsplit = 100, minsize = 50)
   
   opt.tree <- tree.lst$optree 
@@ -385,31 +405,81 @@ homo.fitinparent.nonhonest.simu.func <- function(nn, dim = 5, unmeas.conf = F) {
   tmp
 }
 
-# implement
-# GCT.hetero.res.fitBefore.nonhonest   <- apply(sapply(1:sim.reps, function(iter) hetero.fitBefore.nonhonest.simu.func(nn = 2000)), 1, as.numeric)
-# GCT.hetero.res.fitinparent.nonhonest <- apply(sapply(1:sim.reps, function(iter) hetero.fitinparent.nonhonest.simu.func(nn = 2000)), 1, as.numeric)
-# GCT.homo.res.fitBefore.nonhonest     <- apply(sapply(1:sim.reps, function(iter) homo.fitBefore.nonhonest.simu.func(nn = 2000)), 1, as.numeric)
-# GCT.homo.res.fitinparent.nonhonest   <- apply(sapply(1:sim.reps, function(iter) homo.fitinparent.nonhonest.simu.func(nn = 2000)), 1, as.numeric)
-# 
-# GCT.hetero.fitBefore.nonhonest.2000   <- Output(GCT.hetero.res.fitBefore.nonhonest)
-# GCT.hetero.fitinparent.nonhonest.2000 <- Output(GCT.hetero.res.fitinparent.nonhonest)
-# GCT.homo.fitBefore.nonhonest.2000     <- Output(GCT.homo.res.fitBefore.nonhonest, hetero = FALSE)
-# GCT.homo.fitinparent.nonhonest.2000   <- Output(GCT.homo.res.fitinparent.nonhonest, hetero = FALSE)
 
 
 # foreach
+sim.reps <- 1000
 clnum <- detectCores()
-cl <- makeCluster(getOption("cl.cores", clnum - 1))
+cl <- makeCluster(getOption("cl.cores", clnum - 4))
 registerDoParallel(cl)
-pack <- c("caret", "devtools",  "dplyr", "plm", "gbm", "MASS", "rpart", "randomForestSRC")
+pack <- c("caret", "devtools", "causalTree", "dplyr",  "gbm", "MASS", "rpart", "randomForestSRC", "xgboost")
 
-GCT.hetero.res.fitBefore.nonhonest   <- foreach(1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% hetero.fitBefore.nonhonest.simu.func(nn = 1000)
-GCT.hetero.res.fitinparent.nonhonest <- foreach(1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% hetero.fitinparent.nonhonest.simu.func(nn = 1000)
-GCT.homo.res.fitBefore.nonhonest     <- foreach(1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% homo.fitBefore.nonhonest.simu.func(nn = 1000)
-GCT.homo.res.fitinparent.nonhonest   <- foreach(1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% homo.fitinparent.nonhonest.simu.func(nn =1000)
 
-GCT.hetero.fitBefore.nonhonest.1000.glm   <- Output(GCT.hetero.res.fitBefore.nonhonest)
-GCT.hetero.fitinparent.nonhonest.1000.glm <- Output(GCT.hetero.res.fitinparent.nonhonest)
-GCT.homo.fitBefore.nonhonest.1000.glm     <- Output(GCT.homo.res.fitBefore.nonhonest, hetero = FALSE)
-GCT.homo.fitinparent.nonhonest.1000.glm   <- Output(GCT.homo.res.fitinparent.nonhonest, hetero = FALSE)
+# GBM
+GCT.hetero.res.fitBefore.nonhonest   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  hetero.fitBefore.nonhonest.simu.func(nn = 1000, seed = seed[i])
+GCT.hetero.res.fitinparent.nonhonest <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  hetero.fitinparent.nonhonest.simu.func(nn = 1000, seed = seed[i])
+GCT.homo.res.fitinparent.nonhonest   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  homo.fitinparent.nonhonest.simu.func(nn = 1000, seed = seed[i + sim.reps])
+GCT.homo.res.fitBefore.nonhonest     <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  homo.fitBefore.nonhonest.simu.func(nn = 1000,  seed = seed[i + sim.reps])
+
+GCT.hetero.fitBefore.nonhonest.1000   <- Output(GCT.hetero.res.fitBefore.nonhonest)
+GCT.hetero.fitinparent.nonhonest.1000 <- Output(GCT.hetero.res.fitinparent.nonhonest)
+GCT.homo.fitBefore.nonhonest.1000     <- Output(GCT.homo.res.fitBefore.nonhonest, hetero = FALSE)
+GCT.homo.fitinparent.nonhonest.1000   <- Output(GCT.homo.res.fitinparent.nonhonest, hetero = FALSE)
+
+
+save(GCT.hetero.res.fitBefore.nonhonest,  
+     GCT.hetero.res.fitinparent.nonhonest,
+     GCT.homo.res.fitBefore.nonhonest,    
+     GCT.homo.res.fitinparent.nonhonest, 
+     GCT.hetero.fitBefore.nonhonest.1000,   
+     GCT.hetero.fitinparent.nonhonest.1000, 
+     GCT.homo.fitBefore.nonhonest.1000,     
+     GCT.homo.fitinparent.nonhonest.1000,
+     file = "./Simulations/Study1_MethodComparison/res/GCT.TreebuildwithVar.nonhonest.1000.RData")
+
+# RF & GLM
+GCT.hetero.res.fitBefore.nonhonest.rf   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  hetero.fitBefore.nonhonest.simu.func(nn = 1000, outcome.mthd = "RF", seed = seed[i])
+GCT.homo.res.fitBefore.nonhonest.rf   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  homo.fitBefore.nonhonest.simu.func(nn = 1000, outcome.mthd = "RF", seed = seed[i + sim.reps])
+
+GCT.hetero.res.fitBefore.nonhonest.glm   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  hetero.fitBefore.nonhonest.simu.func(nn = 1000, outcome.mthd = "GLM", seed = seed[i])
+GCT.homo.res.fitBefore.nonhonest.glm   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
+  homo.fitBefore.nonhonest.simu.func(nn = 1000, outcome.mthd = "GLM", seed = seed[i + sim.reps])
+
+GCT.hetero.fitBefore.nonhonest.1000.rf   <- Output(GCT.hetero.res.fitBefore.nonhonest.rf)
+GCT.homo.fitBefore.nonhonest.1000.rf     <- Output(GCT.homo.res.fitBefore.nonhonest.rf, hetero = FALSE)
+GCT.hetero.fitBefore.nonhonest.1000.glm   <- Output(GCT.hetero.res.fitBefore.nonhonest.glm)
+GCT.homo.fitBefore.nonhonest.1000.glm     <- Output(GCT.homo.res.fitBefore.nonhonest.glm, hetero = FALSE)
+
+load("./Simulations/Study1_MethodComparison/res/GCT.TreebuildwithVar.nonhonest.1000.RData")
+GCT.hetero.fitBefore.nonhonest.1000.gbm <- GCT.hetero.fitBefore.nonhonest.1000
+GCT.homo.fitBefore.nonhonest.1000.gbm   <- GCT.homo.fitBefore.nonhonest.1000
+GCT.hetero.res.fitBefore.nonhonest.gbm  <- GCT.hetero.res.fitBefore.nonhonest
+GCT.homo.res.fitBefore.nonhonest.gbm    <- GCT.homo.res.fitBefore.nonhonest
+
+save(GCT.hetero.fitBefore.nonhonest.1000.gbm,
+     GCT.homo.fitBefore.nonhonest.1000.gbm,
+     GCT.hetero.fitBefore.nonhonest.1000.rf,  
+     GCT.homo.fitBefore.nonhonest.1000.rf,    
+     GCT.hetero.fitBefore.nonhonest.1000.glm, 
+     GCT.homo.fitBefore.nonhonest.1000.glm, 
+     GCT.hetero.res.fitBefore.nonhonest.gbm,
+     GCT.homo.res.fitBefore.nonhonest.gbm,  
+     GCT.hetero.res.fitBefore.nonhonest.rf, 
+     GCT.homo.res.fitBefore.nonhonest.rf, 
+     GCT.hetero.res.fitBefore.nonhonest.glm,
+     GCT.homo.res.fitBefore.nonhonest.glm,
+     file = "./Simulations/Appendix_ML/res/GCT.nonhonest.1000.ML.RData")
+
 stopImplicitCluster()
+
+memory.size()
+gc()
+
+
