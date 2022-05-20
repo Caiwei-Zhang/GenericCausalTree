@@ -1,4 +1,5 @@
-load("seed.RData")
+setwd("..")
+load("./seed.RData")
 setwd("./Functions")
 file <- list.files(getwd())
 filePath <- paste(paste(getwd(), "/", sep = ""), file, sep = "")
@@ -213,7 +214,7 @@ save(GCT.hetero.res.fitBefore.nonhonest,
      GCT.hetero.fitinparent.nonhonest.1000, 
      GCT.homo.fitBefore.nonhonest.1000,     
      GCT.homo.fitinparent.nonhonest.1000,
-     file = "./Simulations/Study1_MethodComparison/simu.GCT/seed_res/GCT.TreebuildwithVar.nonhonest.1000.RData")
+     file = "./Simulations/Study1_MethodComparison/res/GCT.TreebuildwithVar.nonhonest.1000.RData")
 
 # RF & GLM
 GCT.hetero.res.fitBefore.nonhonest.rf   <- foreach(i = 1:sim.reps, .combine = rbind, .packages = pack, .export = ls()) %dopar% 
@@ -231,7 +232,7 @@ GCT.homo.fitBefore.nonhonest.1000.rf     <- Output(GCT.homo.res.fitBefore.nonhon
 GCT.hetero.fitBefore.nonhonest.1000.glm   <- Output(GCT.hetero.res.fitBefore.nonhonest.glm)
 GCT.homo.fitBefore.nonhonest.1000.glm     <- Output(GCT.homo.res.fitBefore.nonhonest.glm, hetero = FALSE)
 
-load("./Simulations/Study1_MethodComparison/simu.GCT/seed_res/GCT.TreebuildwithVar.nonhonest.1000.RData")
+load("./Simulations/Study1_MethodComparison/res/GCT.TreebuildwithVar.nonhonest.1000.RData")
 GCT.hetero.fitBefore.nonhonest.1000.gbm <- GCT.hetero.fitBefore.nonhonest.1000
 GCT.homo.fitBefore.nonhonest.1000.gbm   <- GCT.homo.fitBefore.nonhonest.1000
 GCT.hetero.res.fitBefore.nonhonest.gbm  <- GCT.hetero.res.fitBefore.nonhonest
@@ -249,7 +250,7 @@ save(GCT.hetero.fitBefore.nonhonest.1000.gbm,
      GCT.homo.res.fitBefore.nonhonest.rf, 
      GCT.hetero.res.fitBefore.nonhonest.glm,
      GCT.homo.res.fitBefore.nonhonest.glm,
-     file = "./Simulations/Appendix_ML/seed_res/GCT.nonhonest.1000.ML.RData")
+     file = "./Simulations/Appendix_ML/res/GCT.nonhonest.1000.ML.RData")
 
 stopImplicitCluster()
 
@@ -258,3 +259,4 @@ gc()
 
 
 
+# 
