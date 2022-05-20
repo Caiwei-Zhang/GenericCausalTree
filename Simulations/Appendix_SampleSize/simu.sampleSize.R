@@ -1,7 +1,3 @@
-n.seq <- c(3000, 5000, 10000, 15000, 20000)
-sim.r <- 100
-
-load("./seed.RData")
 # increase minsplit and minsize for growing sample size, for example:
 # hetero.fitBefore: minsplit = nn/100, minsize = nn/200
 # hetero.fittInparent:minsplit = nn/50, minsize = nn/100
@@ -9,7 +5,11 @@ load("./seed.RData")
 # seed: from 4000
 # hetero setting: i in 1:length(n.seq) {s in 1:sim.r  seed = 4000 + sim.r * (i-1) + s}
 # homo   setting: i in 1:length(n.seq) {s in 1:sim.r  seed = 4000 + sim.r * length(n.seq) + sim.r * (i-1) + s}
+n.seq <- c(3000, 5000, 10000, 15000, 20000)
+sim.r <- 100
 
+setwd("..")
+load("./seed.RData")
 
 # Start Cluster 
 clnum <- detectCores()
