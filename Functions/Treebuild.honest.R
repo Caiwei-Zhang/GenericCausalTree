@@ -195,19 +195,19 @@ honest.Treebuild <- function(data, form.outcome, form.pscore, weights,  # subset
       
       data.node.est <- data.est
       
-      est.cond.outcome  <- est.outcome(form.outcome, data.node.est, method = outcome.mthd, folds = 5)
-      est.prop.score    <- est.pscore(form.pscore, data.node.est, method = pscore.mthd, folds = 5)
-      
-      v.hat  <- data.node.est$A - est.prop.score
-      Y.star <- data.node.est$Y - est.cond.outcome
-      
-      trt.eff.root <- sum(v.hat * Y.star) / sum(v.hat ^ 2)
-      
-      var.root <- sum((Y.star - trt.eff.root * v.hat)^2 * v.hat^2) / (sum(v.hat ^ 2))^2
-       
-      est.trt.eff[1] <- trt.eff.root
-      variance[1]    <- var.root
-      n.est[1] <- nrow(data.node.est)
+      # est.cond.outcome  <- est.outcome(form.outcome, data.node.est, method = outcome.mthd, folds = 5)
+      # est.prop.score    <- est.pscore(form.pscore, data.node.est, method = pscore.mthd, folds = 5)
+      # 
+      # v.hat  <- data.node.est$A - est.prop.score
+      # Y.star <- data.node.est$Y - est.cond.outcome
+      # 
+      # trt.eff.root <- sum(v.hat * Y.star) / sum(v.hat ^ 2)
+      # 
+      # var.root <- sum((Y.star - trt.eff.root * v.hat)^2 * v.hat^2) / (sum(v.hat ^ 2))^2
+      #  
+      # est.trt.eff[1] <- trt.eff.root
+      # variance[1]    <- var.root
+      # n.est[1] <- nrow(data.node.est)
       
     } else if (init.tree$frame$var[h] == "<leaf>") { # leaf  
       
@@ -309,10 +309,18 @@ honest.Treebuild <- function(data, form.outcome, form.pscore, weights,  # subset
         form.psc.r.terms  <- unlist(strsplit(form.psc.r, " + ", fixed = TRUE))
         form.psc.update   <- paste("A ~ ", paste0(form.psc.r.terms[form.psc.r.terms %in% colnames(data.node.est.update)], collapse = " + "), sep = "")
         
-        est.prop.score   <- est.pscore(form.psc.update, data.node.est.update, method = pscore.mthd, crossfit = FALSE, folds = 5)
         
-        est.cond.outcome <- est.outcome(form.outc.update, data.node.est.update, method = outcome.mthd,
-                                          crossfit = FALSE, folds = 5, type.outcome = "continuous")
+        if(nrow(data.node.est.update) >= 2*minsize*5) {
+          
+          est.prop.score   <- est.pscore(form.psc.update, data.node.est.update, method = pscore.mthd, folds = 5)
+          est.cond.outcome <- est.outcome(form.outc.update, data.node.est.update, method = outcome.mthd, folds = 5, type.outcome = "continuous")
+          
+        } else {
+          
+          est.prop.score   <- est.pscore(form.psc.update, data.node.est.update, method = pscore.mthd, crossfit = FALSE)
+          est.cond.outcome <- est.outcome(form.outc.update, data.node.est.update, method = outcome.mthd, crossfit = FALSE, type.outcome = "continuous")
+          
+        }
         
         v.hat  <- data.node.est.update$A - est.prop.score
         Y.star <- data.node.est.update$Y - est.cond.outcome 
@@ -327,6 +335,18 @@ honest.Treebuild <- function(data, form.outcome, form.pscore, weights,  # subset
     } 
     
     ## TODO: estimate treatment effect
+    if(h==1){ # estimate te and var of root node
+      
+      trt.eff.root <- sum(v.hat * Y.star) / sum(v.hat ^ 2)
+      
+      var.root <- sum((Y.star - trt.eff.root * v.hat)^2 * v.hat^2) / (sum(v.hat ^ 2))^2
+      
+      est.trt.eff[1] <- trt.eff.root
+      variance[1]    <- var.root
+      n.est[1] <- nrow(data.node.est)
+      
+    }
+    
     trt.eff.l <- sum(v.hat[ind.est.l] * Y.star[ind.est.l]) / sum(v.hat[ind.est.l] ^ 2)
     trt.eff.r <- sum(v.hat[ind.est.r] * Y.star[ind.est.r]) / sum(v.hat[ind.est.r] ^ 2)
     
