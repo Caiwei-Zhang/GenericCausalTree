@@ -48,7 +48,7 @@ stemp <- function(y, wt, x, parms, continuous) {
   minsize       <- parms$minsize
   
   
-  if (is.null(pscore) & is.null(cond.outcome)) {
+  if (is.null(pscore) & is.null(cond.outcome)) { # !modelfitBefore
     
     # remove the covariates columns if they have only one level
     data.node.update <- data.node[, c(sapply(data.node[, !colnames(data.node) %in% c("A", "Y")],
@@ -63,9 +63,17 @@ stemp <- function(y, wt, x, parms, continuous) {
     form.psc.r.terms  <- unlist(strsplit(form.psc.r, " + ", fixed = TRUE))
     form.psc.update   <- paste("A ~ ", paste0(form.psc.r.terms[form.psc.r.terms %in% colnames(data.node.update)], collapse = " + "), sep = "")
     
-    pscore       <- est.pscore(form.psc.update, data.node.update, method  = pscore.mthd, folds = 5)
-
-    cond.outcome <- est.outcome(form.outc.update, data.node.update, method = outcome.mthd, type.outcome = "continuous", folds = 5)
+    if(nrow(data.node.update) >= 2*minsize*5){ # set lowest crossfit sample size 
+      
+      pscore       <- est.pscore(form.psc.update, data.node.update, method  = pscore.mthd, folds = 5)
+      cond.outcome <- est.outcome(form.outc.update, data.node.update, method = outcome.mthd, type.outcome = "continuous", folds = 5)
+      
+    } else { # sample size too small to do crossfit
+      
+      pscore       <- est.pscore(form.psc.update, data.node.update, method  = pscore.mthd, crossfit = FALSE)
+      cond.outcome <- est.outcome(form.outc.update, data.node.update, method = outcome.mthd, type.outcome = "continuous", crossfit = FALSE)
+      
+    }
     
   } 
   
@@ -183,6 +191,7 @@ etemp <- function(y, wt, parms) {
   form.outcome  <- parms$form.outcome
   form.pscore   <- parms$form.pscore
   type.outcome  <- parms$type.outcome
+  minsize       <- parms$minsize
   
   # get rss (not used)
   wmean <- sum(Y * wt) / sum(wt)
@@ -206,8 +215,18 @@ etemp <- function(y, wt, parms) {
     form.psc.r.terms  <- unlist(strsplit(form.psc.r, " + ", fixed = TRUE))
     form.psc.update   <- paste("A ~ ", paste0(form.psc.r.terms[form.psc.r.terms %in% colnames(data.node.update)], collapse = " + "), sep = "")
     
-    pscore       <- est.pscore(form.psc.update, data.node.update, method = pscore.mthd, folds = 5)
-    cond.outcome <- est.outcome(form.outc.update, data.node.update, method = outcome.mthd, type.outcome = "continuous", folds = 5)
+    
+    if(nrow(data.node.update) >= 2*minsize*5){ # set lowest crossfit sample size 
+      
+      pscore       <- est.pscore(form.psc.update, data.node.update, method  = pscore.mthd, folds = 5)
+      cond.outcome <- est.outcome(form.outc.update, data.node.update, method = outcome.mthd, type.outcome = "continuous", folds = 5)
+      
+    } else { # sample size too small to do crossfit
+      
+      pscore       <- est.pscore(form.psc.update, data.node.update, method  = pscore.mthd, crossfit = FALSE)
+      cond.outcome <- est.outcome(form.outc.update, data.node.update, method = outcome.mthd, type.outcome = "continuous", crossfit = FALSE)
+      
+    }
     
   }
   
