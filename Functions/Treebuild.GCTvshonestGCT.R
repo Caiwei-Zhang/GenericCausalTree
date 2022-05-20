@@ -167,6 +167,8 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
   }
   
   
+  
+
   # TODO: estimate treatment effect on each node with data.train  
   # add est.trt.eff and variance into init.tree$frame
   est.trt.eff <- numeric(nrow(init.tree$frame))
@@ -191,19 +193,19 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
       
       data.node.est <- data.est
       
-      est.cond.outcome  <- data.node.est$cond.outcome #est.outcome(form.outcome, data.node.est, method = outcome.mthd, folds = 5)
-      est.prop.score    <- data.node.est$pscore #est.pscore(form.pscore, data.node.est, method = pscore.mthd, folds = 5)
-      
-      v.hat  <- data.node.est$A - est.prop.score
-      Y.star <- data.node.est$Y - est.cond.outcome
-      
-      trt.eff.root <- sum(v.hat * Y.star) / sum(v.hat ^ 2)
-      
-      var.root <- sum((Y.star - trt.eff.root * v.hat)^2 * v.hat^2) / (sum(v.hat ^ 2))^2
-      
-      est.trt.eff[1] <- trt.eff.root
-      variance[1]    <- var.root
-      n.est[1] <- nrow(data.node.est)
+      # est.cond.outcome  <- est.outcome(form.outcome, data.node.est, method = outcome.mthd, folds = 5) # data.node.est$cond.outcome
+      # est.prop.score    <- est.pscore(form.pscore, data.node.est, method = pscore.mthd, folds = 5)  # data.node.est$pscore 
+      # 
+      # v.hat  <- data.node.est$A - est.prop.score
+      # Y.star <- data.node.est$Y - est.cond.outcome
+      # 
+      # trt.eff.root <- sum(v.hat * Y.star) / sum(v.hat ^ 2)
+      # 
+      # var.root <- sum((Y.star - trt.eff.root * v.hat)^2 * v.hat^2) / (sum(v.hat ^ 2))^2
+      # 
+      # est.trt.eff[1] <- trt.eff.root
+      # variance[1]    <- var.root
+      # n.est[1] <- nrow(data.node.est)
       
     } else if (init.tree$frame$var[h] == "<leaf>") { # leaf  
       
@@ -287,6 +289,7 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
     }
     
     
+    
     if (!est.modelFitBefore) {
       
       # treated units and control units in each node must larger than minsize
@@ -306,10 +309,18 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
         form.psc.r.terms  <- unlist(strsplit(form.psc.r, " + ", fixed = TRUE))
         form.psc.update   <- paste("A ~ ", paste0(form.psc.r.terms[form.psc.r.terms %in% colnames(data.node.est.update)], collapse = " + "), sep = "")
         
-        est.prop.score   <- est.pscore(form.psc.update, data.node.est.update, method = pscore.mthd, crossfit = FALSE, folds = 5)
         
-        est.cond.outcome <- est.outcome(form.outc.update, data.node.est.update, method = outcome.mthd,
-                                        crossfit = FALSE, folds = 5, type.outcome = "continuous")
+        if(nrow(data.node.est.update) >= 2*minsize*5) {
+
+          est.prop.score   <- est.pscore(form.psc.update, data.node.est.update, method = pscore.mthd, folds = 5)
+          est.cond.outcome <- est.outcome(form.outc.update, data.node.est.update, method = outcome.mthd, folds = 5, type.outcome = "continuous")
+
+        } else {
+          
+          est.prop.score   <- est.pscore(form.psc.update, data.node.est.update, method = pscore.mthd, crossfit = FALSE)
+          est.cond.outcome <- est.outcome(form.outc.update, data.node.est.update, method = outcome.mthd, crossfit = FALSE, type.outcome = "continuous")
+
+        }
         
         v.hat  <- data.node.est.update$A - est.prop.score
         Y.star <- data.node.est.update$Y - est.cond.outcome 
@@ -324,6 +335,19 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
     } 
     
     ## TODO: estimate treatment effect
+    if(h==1){ # estimate te and var of root node
+      
+      trt.eff.root <- sum(v.hat * Y.star) / sum(v.hat ^ 2)
+      
+      var.root <- sum((Y.star - trt.eff.root * v.hat)^2 * v.hat^2) / (sum(v.hat ^ 2))^2
+      
+      est.trt.eff[1] <- trt.eff.root
+      variance[1]    <- var.root
+      n.est[1] <- nrow(data.node.est)
+      
+    }
+    
+    
     trt.eff.l <- sum(v.hat[ind.est.l] * Y.star[ind.est.l]) / sum(v.hat[ind.est.l] ^ 2)
     trt.eff.r <- sum(v.hat[ind.est.r] * Y.star[ind.est.r]) / sum(v.hat[ind.est.r] ^ 2)
     
@@ -362,6 +386,8 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
   
   
   
+  
+  
   # prune
   ## TODO: find minimum lambda, i.e. minimum g.h of all nodes in current tree.
   subtree.seq <- vector("list")
@@ -374,7 +400,7 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
   
   while (stop.prune == FALSE ) {
     
-    print(paste("Now starting to prune subtree s = ", s))
+    #print(paste("Now starting to prune subtree s = ", s))
     
     tree.to.prune   <- subtree.seq[[s]]
     frame.current   <- tree.to.prune$frame
@@ -408,6 +434,13 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
     
     tree.new <- tree.to.prune
     tree.new$frame <- frame.update
+    
+    # when splits have only one line, class(splits.current) = "numeric"
+    # if (class(splits.update) == "numeric") { # if prune the root node
+    #   tree.new$splits <- as.matrix(splits.)
+    # } else if (class(splits.update) == "matrix") {
+    #   tree.new$splits <- splits.update
+    # }
     tree.new$splits <- splits.update
     
     # update where
@@ -472,7 +505,7 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
   
   for (t in 1:length(subtree.seq)) { # t in 1:2
     
-    print(paste("Now starting to valid subtree t = ", t))
+    #print(paste("Now starting to valid subtree t = ", t))
     
     tree.to.valid <- subtree.seq[[t]]
     
@@ -601,11 +634,17 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
             form.psc.r.terms  <- unlist(strsplit(form.psc.r, " + ", fixed = TRUE))
             form.psc.update   <- paste("A ~ ", paste0(form.psc.r.terms[form.psc.r.terms %in% colnames(data.node.valid.update)], collapse = " + "), sep = "")
             
-            valid.pscore       <- est.pscore(form.psc.update, data.node.valid.update, method = pscore.mthd, 
-                                             crossfit = FALSE, folds = 5)
-            
-            valid.cond.outcome <- est.outcome(form.outc.update, data.node.valid.update, method = outcome.mthd,
-                                              crossfit = FALSE, folds = 5, type.outcome = "continuous")
+            # if(nrow(data.node.valid.update) >= 2*minsize*5) {
+            # 
+            #   valid.pscore       <- est.pscore(form.psc.update, data.node.valid.update, method = pscore.mthd, folds = 5)
+            #   valid.cond.outcome <- est.outcome(form.outc.update, data.node.valid.update, method = outcome.mthd, folds = 5, type.outcome = "continuous")
+            #   
+            # } else {
+              
+            valid.pscore       <- est.pscore(form.psc.update, data.node.valid.update, method = pscore.mthd, crossfit = FALSE)
+            valid.cond.outcome <- est.outcome(form.outc.update, data.node.valid.update, method = outcome.mthd, crossfit = FALSE, type.outcome = "continuous")
+              
+            # }
             
             v.hat  <- data.node.valid.update$A - valid.pscore
             Y.star <- data.node.valid.update$Y - valid.cond.outcome 
@@ -639,6 +678,11 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
         var.right <- sum((Y.star[ind.valid.r] - trt.eff.r * v.hat[ind.valid.r])^2
                          * v.hat[ind.valid.r]^2) / (sum(v.hat[ind.valid.r] ^ 2))^2
         
+        # Skip this loop if there is negative estimated variance
+        # if (var.left < 0 | var.right < 0) {
+        #   next
+        # }
+        
         valid.goodness <- valid.goodness + (delta.trt.eff) ^ 2  / (var.left + var.right)
         
       } # end h
@@ -658,6 +702,7 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
   opt.ind <- which.max(G.t)
   opt.tree <- subtree.seq[[opt.ind]]
   
+
   # class(opt.tree) <- "causalPartitionTree"
   return(list(optree = opt.tree, 
               res.tab = res.tab, 
@@ -668,3 +713,18 @@ Treebuild.GCTwithVar <- function(data, form.outcome, form.pscore, weights,  # su
 }
 
 
+
+
+# calculate the variance in the root
+# v.hat  <- data.valid$A - data.valid$pscore
+# Y.star <- data.valid$Y - data.valid$cond.outcome
+# 
+# trt.eff.root <- sum(v.hat * Y.star) / sum(v.hat ^ 2)
+# 
+# var.root <- nrow(data.valid) * sum(v.hat^2 * (Y.star-v.hat*trt.eff.root)^2) / (sum(v.hat^2))^2
+# 
+# tree.to.valid$frame$variance[1] <- var.root
+# 
+# # variance should be estimate with seperate data 
+# tree.to.valid$frame$variance[h+1] <- var.left
+# tree.to.valid$frame$variance[r.child.row] <- var.right
