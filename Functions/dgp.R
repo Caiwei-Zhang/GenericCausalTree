@@ -1,7 +1,11 @@
 # without confounding 
 # randomized trial
-no.conf <- function(N, p = 5, dgp = c("iid", "cov", "rand", "mix"), N.test = 1000, p.cont) {
+no.conf <- function(N, p = 5, dgp = c("iid", "cov", "rand", "mix"), N.test = 1000, p.cont, seed = NULL) {
     
+    if(!is.null(seed)) {
+      set.seed(seed)
+    }  
+  
     Sigma <- matrix(0, p, p)
     Sigma <- ifelse(col(Sigma)==row(Sigma), 1, 0.3)
     X <- mvrnorm(N, rep(0, p), Sigma)
@@ -30,7 +34,11 @@ no.conf <- function(N, p = 5, dgp = c("iid", "cov", "rand", "mix"), N.test = 100
 
 ## with confounding 
 # heterogeneous treatment effect
-hetero.DataGen <- function(N, p = 5, dgp = c("iid", "cov", "mix"), N.test = 1000, p.cont) {
+hetero.DataGen <- function(N, p = 5, dgp = c("iid", "cov", "mix"), N.test = 1000, p.cont, seed = NULL) {
+  
+  if(!is.null(seed)) {
+    set.seed(seed)
+  } 
   
   if (dgp == "iid") { # covariates iid generate from N(0, 1)
     
@@ -116,7 +124,11 @@ hetero.DataGen <- function(N, p = 5, dgp = c("iid", "cov", "mix"), N.test = 1000
 
 ## with confounding 
 # homogeneous treatment effect
-homo.DataGen <- function(N, p = 5, dgp = c("iid", "cov", "mix"), N.test = 1000, p.cont) {
+homo.DataGen <- function(N, p = 5, dgp = c("iid", "cov", "mix"), N.test = 1000, p.cont, seed = NULL) {
+  
+  if(!is.null(seed)) {
+    set.seed(seed)
+  } 
   
   if (dgp == "iid") { # covariates iid generate from N(0, 1)
     
